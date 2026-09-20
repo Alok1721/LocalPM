@@ -1,0 +1,25 @@
+{
+  "name": "projectmanagment-main",
+  "version": "1.0.0",
+  "description": "> A standalone, high-performance web application designed for Project Managers to plan, track, schedule, and execute complex product development projects, resource allocations, dependency networks, and baselines.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "python build.py"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "esbuild": "^0.28.2",
+    "tailwindcss": "^4.3.3"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management</title>
+    
+    <link rel="stylesheet" href="css/tailwind.css">
+    
+    <!-- changed SheetJS CDN to local xlsx for Excel (.xlsx) Export & Import -->
+    <script src="js/vendor/xlsx.full.min.js"></script>
+
+    <!-- Custom App CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- App Top Navigation Header -->
+    <header class="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between shadow-md flex-wrap gap-2 z-30">
+        <!-- Brand & Editable Project Title -->
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 bg-indigo-600 px-2.5 py-1 rounded-md text-white font-bold text-sm shadow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+                <span>Project Management</span>
+            </div>
+            <input type="text" id="project-title-input" value="Project Management Schedule" class="bg-slate-800 hover:bg-slate-700/80 focus:bg-slate-800 border border-slate-700 focus:border-indigo-500 text-white text-xs font-semibold px-2.5 py-1 rounded focus:outline-none w-52 md:w-60 transition" title="Click to rename project">
+        </div>
+
+        <!-- Center View Switcher & Baseline KPI Summary -->
+        <div class="flex items-center gap-3">
+            <!-- View Switcher -->
+            <div class="bg-slate-800 p-1 rounded-md flex items-center gap-1 border border-slate-700 text-xs">
+                <button id="view-btn-split" class="px-3 py-1 bg-indigo-600 text-white rounded font-medium text-xs shadow-sm">Grid & Gantt</button>
+                <button id="view-btn-resources" class="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded font-medium text-xs">Engineer Workload</button>
+                <button id="view-btn-deptree" class="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded font-medium text-xs">Dependency Tree</button>
+                <button id="view-btn-milestones" class="px-3 py-1 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded font-medium text-xs">Milestones</button>
+                <button id="view-btn-info" class="px-3 py-1 bg-slate-800 text-amber-300 hover:bg-slate-700 rounded font-medium text-xs flex items-center gap-1">
+                    <span>❓ Info & Guide</span>
+                </button>
+            </div>
+
+            <!-- Baseline KPI Status Badge -->
+            <div id="header-baseline-kpi" class="hidden xl:block px-2.5 py-1 bg-slate-800 text-slate-400 rounded text-xs border border-slate-700 font-mono">
+                Baseline: Not Set
+            </div>
+        </div>
+
+        <!-- Right Toolbar Actions: Calendar Config, Baseline, File Save, Export, Print -->
+        <div class="flex items-center gap-2">
+            <!-- Calendar Config Button -->
+            <button id="btn-calendar-config" class="px-2.5 py-1 bg-indigo-900/80 hover:bg-indigo-800 border border-indigo-700 text-indigo-200 rounded font-medium text-xs flex items-center gap-1.5 transition shadow-sm" title="Configure Working Days, Festive Holidays & Overtime Days">
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>Calendar</span>
+            </button>
+
+            <!-- Set Baseline -->
+            <button id="btn-set-baseline" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded font-medium text-xs flex items-center gap-1 transition" title="Snapshot current schedule as baseline">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Baseline
+            </button>
+
+            <!-- Export .prj -->
+            <button id="btn-export-prj" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-medium text-xs flex items-center gap-1 shadow transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                Save (.prj)
+            </button>
+
+            <!-- Import .prj -->
+            <button id="btn-import-prj" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded font-medium text-xs flex items-center gap-1 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Open (.prj)
+            </button>
+            <input type="file" id="prj-file-input" accept=".prj,.json" class="hidden">
+
+            <!-- Export Excel -->
+            <button id="btn-export-excel" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-medium text-xs flex items-center gap-1 shadow transition" title="Export to Excel (.xlsx) for backward compatibility">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Excel
+            </button>
+
+            <!-- Presets Dropdown with New Project option -->
+            <select id="preset-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none" title="Create a new blank project or load a sample preset">
+                <option value="">New / Presets...</option>
+                <option value="new_blank">➕ Create New Blank Project</option>
+                <option value="iot_device">📁 Preset: IoT Tracker Schedule</option>
+            </select>
+
+            <!-- Print / PDF Select -->
+            <select id="print-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:outline-none" title="Print or Save PDF of individual views">
+                <option value="">Print / PDF...</option>
+                <option value="all">Print Full Screen</option>
+                <option value="gantt">Print Gantt Timeline ONLY</option>
+                <option value="wbs">Print Activity List ONLY</option>
+                <option value="milestones">Print Milestones Roadmap ONLY</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 flex overflow-hidden relative">
+
+        <!-- Split View (Grid + Gantt) -->
+        <div id="split-view-container" class="w-full h-full flex overflow-hidden">
+            <!-- Left Pane: WBS Grid -->
+            <div id="wbs-pane" style="width: 50%; min-width: 340px;" class="h-full flex-shrink-0"></div>
+
+            <!-- Draggable Split Resizer Bar -->
+            <div id="split-resizer" class="split-resizer h-full z-20"></div>
+
+            <!-- Right Pane: Interactive Gantt Chart -->
+            <div id="gantt-pane" class="flex-1 h-full overflow-hidden"></div>
+        </div>
+
+        <!-- Resource Pool & Workload Heatmap View (Initially Hidden) -->
+        <div id="resource-view-container" class="w-full h-full hidden overflow-auto"></div>
+
+        <!-- Network Diagram / Dependency Tree View (Initially Hidden) -->
+        <div id="deptree-view-container" class="w-full h-full hidden overflow-auto"></div>
+
+        <!-- Milestone Executive Roadmap View (Initially Hidden) -->
+        <div id="milestones-view-container" class="w-full h-full hidden overflow-auto"></div>
+
+        <!-- Info & User Guide View (Initially Hidden) -->
+        <div id="info-guide-view-container" class="w-full h-full hidden overflow-auto"></div>
+
+        <!-- Calendar Config Modal Container -->
+        <div id="calendar-modal-container"></div>
+
+    </main>
+
+    <!-- App Entry Point Module -->
+    <script src="js/app.bundle.js"></script>
+</body>
+</html>
